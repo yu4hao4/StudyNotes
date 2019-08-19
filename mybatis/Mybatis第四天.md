@@ -112,3 +112,153 @@
 
 ## Mybatis的注解开发
 
+**一对多注解配置：**
+
+```java
+//一对多关系映射：一个用户对应多个账户
+private List<Account> accounts;
+
+public List<Account> getAccounts() {
+    return accounts;
+}
+
+public void setAccounts(List<Account> accounts) {
+    this.accounts = accounts;
+}
+/**
+ * 查询所有用户
+ * @return
+ */
+@Select("select * from user")
+@Results(id="userMap",value = {
+        @Result(id=true,column = "id",property = "id"),
+        @Result(column = "username",property = "username"),
+        @Result(column = "password",property = "password"),
+        @Result(property = "accounts",column = "id",
+                many = @Many(select = "annoonetomany.dao.IAccountDao.findAccountByUid",
+                        fetchType = FetchType.LAZY))
+})
+List<User> findAll();
+```
+
+**一对一和多对一注解配置：**
+
+```java
+//多对一（mybatis中称之为一对一）的映射：一个账户只能属于一个用户
+private User user;
+
+public User getUser() {
+    return user;
+}
+
+public void setUser(User user) {
+    this.user = user;
+}
+/**
+ * 查询所有账户，并且获取每个账户所属的用户信息
+ * @return
+ */
+@Select("select * from account")
+@Results(id="",value={
+        @Result(id = true,column = "id",property = "id"),
+        @Result(column = "uid",property = "uid"),
+        @Result(column = "money",property = "money"),
+        @Result(property = "user",column = "uid",
+                one = @One(select="annoonetomany.dao.IUserDao.findById",
+                        fetchType= FetchType.EAGER))
+})
+List<Account> findAll();
+```
+
+## Mybatis的注解开发使用二级缓存
+
+````java
+package annoonetomany.dao;
+
+import annoonetomany.domain.User;
+import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.mapping.FetchType;
+
+import java.util.List;
+
+/**
+ * @author 喻浩
+ * @create 2019-08-15-22:32
+ * 用户的持久层接口
+ * 在mybatis中针对CRUD一共有四个注解
+ * @Select @Insert @Update @Delete
+ */
+//开启二级缓存
+@CacheNamespace(blocking = true)
+public interface IUserDao {
+
+    /**
+     * 查询所有用户
+     * @return
+     */
+    @Select("select * from user")
+    @Results(id="userMap",value = {
+            @Result(id=true,column = "id",property = "id"),
+            @Result(column = "username",property = "username"),
+            @Result(column = "password",property = "password"),
+            @Result(property = "accounts",column = "id",
+                    many = @Many(select = "annoonetomany.dao.IAccountDao.findAccountByUid",
+                            fetchType = FetchType.LAZY))
+    })
+    List<User> findAll();
+
+    /**
+     * 保存用户
+     */
+    @Insert("insert into user(username,password)values(#{username},#{password})")
+    void saveUser(User user);
+
+    /**
+     * 根据id查用户
+     * @param userId
+     * @return
+     */
+    @Select("select * from user where id=#{id}")
+    @ResultMap("userMap")
+    User findById(Integer userId);
+
+    /**
+     * 根据用户名称模糊查询
+     * @param username
+     * @return
+     */
+//    @Select("select * from user where username like #{username}")
+    @Select("select * from user where username like '%${value}%'")
+    List<User> findByName(String username);
+
+    /**
+     * 查总用户数量
+     * @return
+     */
+    @Select("select count(*) from user ")
+    int findTotalUser();
+}
+````
+
+**测试二级缓存**
+
+```java
+@Test
+public void testFindOne(){
+SqlSession session = factory.openSession();
+IUserDao userDao = session.getMapper(IUserDao.class);;
+User user = userDao.findById(1);
+System.out.println(user);
+//释放一级缓存
+session.close();
+
+//再次打开session
+SqlSession session1 = factory.openSession();
+IUserDao userDao1 = session1.getMapper(IUserDao.class);
+User user1 = userDao1.findById(1);
+System.out.println(user1);
+
+session1.close();
+}
+```
+
