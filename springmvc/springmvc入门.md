@@ -1,5 +1,3 @@
-
-
 # 入门案例流程总结
 
 1.  启动服务器，加载一些配置文件
@@ -11,7 +9,7 @@
 2.  发送请求，后台处理请求
     **springmvc框架基于组件方式执行流程：**
 
-    ![springmvc框架基于组件方式执行流程](D:\学习\文章\images\Mybatis\springmvc框架基于组件方式执行流程.png)
+    ![springmvc框架基于组件方式执行流程]([https://github.com/yu4hao4/StudyNotes/blob/master/images/springmvc%E6%A1%86%E6%9E%B6%E5%9F%BA%E4%BA%8E%E7%BB%84%E4%BB%B6%E6%96%B9%E5%BC%8F%E6%89%A7%E8%A1%8C%E6%B5%81%E7%A8%8B.png](https://github.com/yu4hao4/StudyNotes/blob/master/images/springmvc框架基于组件方式执行流程.png))
 
 ## 入门案例中涉及的组件
 
