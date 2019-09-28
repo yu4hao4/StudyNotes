@@ -54,3 +54,7 @@ tid=2
 ## /addCourse 添加课程
 
 cid=2&coursename=2&teachername=2&time=2&location=2&numberofweek=2&type=2&credit=2
+
+
+
+# mounted后进行异步请求
